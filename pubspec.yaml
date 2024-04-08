@@ -1,11 +1,6 @@
-# Does and/or CAN the name be updated?
 name: voice_arduino
 version: 0.5.0
 description: Demonstrates how to use the `flutter_bluetooth_serial_ble` plugin.
-authors:
-  - Patryk Ludwikowski <patryk.ludwikowski.7@gmail.com>
-homepage: https://github.com/Erhannis/flutter_bluetooth_serial_ble/tree/master/example/
-
 environment:
   sdk: ">=2.12.0 <3.0.0"
 
@@ -15,7 +10,8 @@ dependencies:
 
   scoped_model: ^2.0.0-nullsafety.0
   cupertino_icons: ^1.0.3
-
+  speech_to_text: ^6.6.1
+  avatar_glow: ^3.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
