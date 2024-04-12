@@ -81,7 +81,10 @@ class _ChatPage extends State<ChatPage> {
   }
 
   void startListening() async {
-    await _speechToText.listen(onResult: _onSpeechResult, localeId: 'bn_BD');
+    await _speechToText.listen(
+        onResult: _onSpeechResult,
+        localeId: 'bn_BD',
+        listenFor: Duration(seconds: 6));
     setState(() {});
   }
 
@@ -173,10 +176,10 @@ class _ChatPage extends State<ChatPage> {
             ),
             Text(
               isConnecting
-                  ? 'সংযুক্ত হওয়ার জন্য অপেক্ষা করুন...'
+                  ? 'Waiting for Connection...'
                   : isConnected
-                      ? 'কথা বলুন'
-                      : ' সংযোগ বিচ্ছিন্ন',
+                      ? 'Tap the Mic'
+                      : ' Disconnected',
               style: TextStyle(fontSize: 20),
             ),
             SizedBox(
@@ -213,68 +216,122 @@ class _ChatPage extends State<ChatPage> {
       }
     }
 
-    // Create message if there is new line character
-    String dataString = String.fromCharCodes(buffer);
-    int index = buffer.indexOf(13);
-    if (~index != 0) {
-      setState(() {
-        messages.add(
-          _Message(
-            1,
-            backspacesCounter > 0
-                ? _messageBuffer.substring(
-                    0, _messageBuffer.length - backspacesCounter)
-                : _messageBuffer + dataString.substring(0, index),
-          ),
-        );
-        _messageBuffer = dataString.substring(index);
-      });
-    } else {
-      _messageBuffer = (backspacesCounter > 0
-          ? _messageBuffer.substring(
-              0, _messageBuffer.length - backspacesCounter)
-          : _messageBuffer + dataString);
-    }
+    // // Create message if there is new line character
+    // String dataString = String.fromCharCodes(buffer);
+    // print('dataString: $dataString');
+    // int index = buffer.indexOf(13);
+    // if (~index != 0) {
+    //   setState(() {
+    //     messages.add(
+    //       _Message(
+    //         1,
+    //         backspacesCounter > 0
+    //             ? _messageBuffer.substring(
+    //                 0, _messageBuffer.length - backspacesCounter)
+    //             : _messageBuffer + dataString.substring(0, index),
+    //       ),
+    //     );
+    //     _messageBuffer = dataString.substring(index);
+    //   });
+    // } else {
+    //   _messageBuffer = (backspacesCounter > 0
+    //       ? _messageBuffer.substring(
+    //           0, _messageBuffer.length - backspacesCounter)
+    //       : _messageBuffer + dataString);
+    // }
   }
 
   void _sendMessage(String text) async {
     text = text.trim();
     String textCommand = text;
-    if (textCommand == "সাদা বাতি জ্বালাও") {
+// Define an array of Bengali phrases for each command group
+    const LEDOnPhrases = [
+      "সাদা বাতি জ্বালাও",
+      "সাদা বাতি চালু কর",
+      "সাদা বাতি চালু",
+      "সাদা লাইট জ্বালাও",
+      "সাদা লাইট চালু কর",
+      "সাদা লাইট চালিয়ে দাও",
+      "সাদা বাতি চালিয়ে দাও"
+    ];
+    const LEDOffPhrases = [
+      "সাদা বাতি নিভাও",
+      "সাদা বাতি বন্ধ",
+      "সাদা বাতি বন্ধ কর",
+      "সাদা লাইট নিভাও",
+      "সাদা লাইট বন্ধ কর",
+      "সাদা লাইট বন্ধ করো",
+      "সাদা বাতি বন্ধ করো"
+    ];
+    const RGBOnPhrases = [
+      "রঙিন বাতি জ্বালাও",
+      "রঙিন বাতি চালু কর",
+      "রঙিন বাতি চালু",
+      "রঙিন লাইট জ্বালাও",
+      "রঙিন লাইট চালু কর",
+      "রঙিন লাইট চালিয়ে দাও",
+      "রঙিন বাতি চালিয়ে দাও"
+    ];
+    const RGBOffPhrases = [
+      "রঙিন বাতি নিভাও",
+      "রঙিন বাতি বন্ধ কর","রঙিন বাতি বন্ধ","রঙ্গিন বাতি বন্ধ",
+      "রঙিন লাইট নিভাও",
+      "রঙিন লাইট বন্ধ কর",
+      "রঙিন লাইট বন্ধ করো",
+      "রঙিন বাতি বন্ধ করো"
+    ];
+    const fanOnPhrases = [
+      "ফ্যান চালাও",
+      "ফ্যান চালু",
+      "পাখা চালাও",
+      "পাখা চালু",
+      "পাখা চালিয়ে দাও",
+      "ফ্যান চালিয়ে দাও"
+    ];
+    const fanOffPhrases = [
+      "ফ্যান বন্ধ কর",
+      "ফ্যান বন্ধ",
+      "পাখা বন্ধ কর",
+      "পাখা বন্ধ",
+      "পাখা বন্ধ করো",
+      "ফ্যান বন্ধ করো"
+    ];
+    const allOnPhrases = [
+      "সব চালু",
+      "সব চালু কর",
+      "সব জ্বালাও",
+      "সব চালাও",
+      "সব চালিয়ে দাও",
+      "সব চালিয়ে দাও"
+    ];
+    const allOffPhrases = [
+      "সব বন্ধ",
+      "সব বন্ধ কর",
+      "সব নিভাও",
+      "সব বন্ধ করুন",
+      "সব বন্ধ করো",
+      "সব বন্ধ করোন"
+    ];
+
+// Check if textCommand matches any phrase in the array and assign the corresponding command
+    if (LEDOnPhrases.contains(textCommand)) {
       textCommand = "turn on LED";
-    }
-    if (textCommand == "সাদা বাতি নিভাও") {
+    } else if (LEDOffPhrases.contains(textCommand)) {
       textCommand = "turn off LED";
-    }
-    if (textCommand == "রঙিন বাতি জ্বালাও") {
+    } else if (RGBOnPhrases.contains(textCommand)) {
       textCommand = "turn on RGB";
-    }
-    if (textCommand == "রঙিন বাতি নিভাও") {
+    } else if (RGBOffPhrases.contains(textCommand)) {
       textCommand = "turn off RGB";
-    }
-    if (textCommand == "ফ্যান চালাও") {
+    } else if (fanOnPhrases.contains(textCommand)) {
       textCommand = "turn on fan";
-    }
-    if (textCommand == "ফ্যান চালু") {
-      textCommand = "turn on fan";
-    }
-    if (textCommand == "ফ্যান বন্ধ কর") {
+    } else if (fanOffPhrases.contains(textCommand)) {
       textCommand = "turn off fan";
-    }
-    if (textCommand == "ফ্যান বন্ধ") {
-      textCommand = "turn off fan";
-    }
-    if (textCommand == "সব বন্ধ") {
+    } else if (allOnPhrases.contains(textCommand)) {
+      textCommand = "turn on all";
+    } else if (allOffPhrases.contains(textCommand)) {
       textCommand = "turn off all";
     }
-    if (textCommand == "সব চালু") {
-      textCommand = "turn on all";
-    }if (textCommand == "সব বন্ধ কর") {
-      textCommand = "turn off all";
-    }
-    if (textCommand == "সব চালু কর") {
-      textCommand = "turn on all";
-    }
+
     textCommand = textCommand.trim();
 
     if (textCommand.length > 0) {
