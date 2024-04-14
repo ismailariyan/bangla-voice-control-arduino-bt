@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
-
 import './BackgroundCollectedPage.dart';
 import './BackgroundCollectingTask.dart';
 import './ChatPage.dart';
@@ -55,7 +53,7 @@ class _MainPage extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Home Automation App',
+          'Bondhu App',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.blueGrey,

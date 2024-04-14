@@ -142,7 +142,7 @@ class _ChatPage extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
           title: (isConnecting
-              ? Text('Connecting chat to ' + serverName + '...')
+              ? Text('Connecting to ' + serverName + '...')
               : isConnected
                   ? Text('Live with ' + serverName)
                   : Text('Command History ' + serverName))),
@@ -274,7 +274,9 @@ class _ChatPage extends State<ChatPage> {
     ];
     const RGBOffPhrases = [
       "রঙিন বাতি নিভাও",
-      "রঙিন বাতি বন্ধ কর","রঙিন বাতি বন্ধ","রঙ্গিন বাতি বন্ধ",
+      "রঙিন বাতি বন্ধ কর",
+      "রঙিন বাতি বন্ধ",
+      "রঙ্গিন বাতি বন্ধ",
       "রঙিন লাইট নিভাও",
       "রঙিন লাইট বন্ধ কর",
       "রঙিন লাইট বন্ধ করো",
