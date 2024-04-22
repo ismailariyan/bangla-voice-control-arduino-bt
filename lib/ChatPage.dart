@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:avatar_glow/avatar_glow.dart';
@@ -41,6 +42,19 @@ class _ChatPage extends State<ChatPage> {
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   String words = '';
+  double level = 0.0;
+  double minSoundLevel = 50000;
+  double maxSoundLevel = -50000;
+
+  void soundLevelListener(double level) {
+    minSoundLevel = min(minSoundLevel, level);
+    maxSoundLevel = max(maxSoundLevel, level);
+    // _logEvent('sound level $level: $minSoundLevel - $maxSoundLevel ');
+    setState(() {
+      this.level = level;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -80,11 +94,15 @@ class _ChatPage extends State<ChatPage> {
     setState(() {});
   }
 
-  void startListening() async {
-    await _speechToText.listen(
-        onResult: _onSpeechResult,
-        localeId: 'bn_BD',
-        listenFor: Duration(seconds: 6));
+  void startListening() {
+    _speechToText.listen(
+      onResult: _onSpeechResult,
+      localeId: 'bn_BD',
+      listenFor: Duration(seconds: 10),
+      pauseFor: Duration(seconds: 5),
+      onSoundLevelChange: soundLevelListener,
+    );
+
     setState(() {});
   }
 
@@ -98,6 +116,8 @@ class _ChatPage extends State<ChatPage> {
       print(words);
       _sendMessage(words);
     }
+
+    setState(() {});
   }
 
   @override
@@ -144,43 +164,64 @@ class _ChatPage extends State<ChatPage> {
           title: (isConnecting
               ? Text('Connecting to ' + serverName + '...')
               : isConnected
-                  ? Text('Live with ' + serverName)
-                  : Text('Command History ' + serverName))),
+                  ? Text('Coonected with ' + serverName)
+                  : Text('Disconnected ' + serverName))),
       body: SafeArea(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Flexible(
-              child: ListView(
-                  padding: const EdgeInsets.all(12.0),
-                  controller: listScrollController,
-                  children: list),
+            // Flexible(
+            //   child: ListView(
+            //       padding: const EdgeInsets.all(12.0),
+            //       controller: listScrollController,
+            //       children: list),
+            // ),
+            Center(
+              child: Container(
+                width: 100,
+                height: 100,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                        blurRadius: .5,
+                        spreadRadius: level * 5,
+                        color: Colors.blue.withOpacity(.05))
+                  ],
+                  color: Colors.white60,
+                  borderRadius: const BorderRadius.all(Radius.circular(100)),
+                ),
+                child: IconButton(
+                  icon: _speechToText.isListening
+                      ? Icon(
+                          Icons.mic,
+                          color: Colors.blue,
+                        )
+                      : Icon(
+                          Icons.mic_off,
+                          color: Colors.grey,
+                        ),
+                  onPressed: isConnected
+                      ? () {
+                          if (_speechEnabled) {
+                            startListening();
+                          }
+                        }
+                      : null,
+                  iconSize: 80,
+                ),
+              ),
             ),
-            IconButton(
-              icon: _speechToText.isListening
-                  ? Icon(
-                      Icons.mic,
-                      color: Colors.blue,
-                    )
-                  : Icon(
-                      Icons.mic_off,
-                      color: Colors.grey,
-                    ),
-              onPressed: isConnected
-                  ? () {
-                      if (_speechEnabled) {
-                        startListening();
-                      }
-                    }
-                  : null,
-              iconSize: 100,
-            ),
-            Text(
-              isConnecting
-                  ? 'Waiting for Connection...'
-                  : isConnected
-                      ? 'Tap the Mic'
-                      : ' Disconnected',
-              style: TextStyle(fontSize: 20),
+            Center(
+              child: Text(
+                isConnecting
+                    ? 'Waiting for Connection...'
+                    : isConnected
+                        ? 'Tap the Mic'
+                        : ' Disconnected',
+                style: TextStyle(fontSize: 20),
+              ),
             ),
             SizedBox(
               height: 20,
@@ -252,7 +293,9 @@ class _ChatPage extends State<ChatPage> {
       "সাদা লাইট জ্বালাও",
       "সাদা লাইট চালু কর",
       "সাদা লাইট চালিয়ে দাও",
-      "সাদা বাতি চালিয়ে দাও"
+      "সাদা বাতি চালিয়ে দাও",
+      "টার্ন অন এলইডি",
+      "টার্ন অন এল ই ডি"
     ];
     const LEDOffPhrases = [
       "সাদা বাতি নিভাও",
@@ -261,7 +304,9 @@ class _ChatPage extends State<ChatPage> {
       "সাদা লাইট নিভাও",
       "সাদা লাইট বন্ধ কর",
       "সাদা লাইট বন্ধ করো",
-      "সাদা বাতি বন্ধ করো"
+      "সাদা বাতি বন্ধ করো",
+      "টার্ন অফ এলইডি",
+      "টার্ন অফ এল ই ডি",
     ];
     const RGBOnPhrases = [
       "রঙিন বাতি জ্বালাও",
@@ -270,7 +315,9 @@ class _ChatPage extends State<ChatPage> {
       "রঙিন লাইট জ্বালাও",
       "রঙিন লাইট চালু কর",
       "রঙিন লাইট চালিয়ে দাও",
-      "রঙিন বাতি চালিয়ে দাও"
+      "রঙিন বাতি চালিয়ে দাও",
+      "টার্ন অন আরজিবি",
+      "টার্ন অন আর জি বি",
     ];
     const RGBOffPhrases = [
       "রঙিন বাতি নিভাও",
@@ -280,7 +327,9 @@ class _ChatPage extends State<ChatPage> {
       "রঙিন লাইট নিভাও",
       "রঙিন লাইট বন্ধ কর",
       "রঙিন লাইট বন্ধ করো",
-      "রঙিন বাতি বন্ধ করো"
+      "রঙিন বাতি বন্ধ করো",
+      "টার্ন অফ আরজিবি",
+      "টার্ন অফ আর জি বি",
     ];
     const fanOnPhrases = [
       "ফ্যান চালাও",
@@ -288,7 +337,8 @@ class _ChatPage extends State<ChatPage> {
       "পাখা চালাও",
       "পাখা চালু",
       "পাখা চালিয়ে দাও",
-      "ফ্যান চালিয়ে দাও"
+      "ফ্যান চালিয়ে দাও",
+      "টার্ন অন ফ্যান",
     ];
     const fanOffPhrases = [
       "ফ্যান বন্ধ কর",
@@ -296,7 +346,8 @@ class _ChatPage extends State<ChatPage> {
       "পাখা বন্ধ কর",
       "পাখা বন্ধ",
       "পাখা বন্ধ করো",
-      "ফ্যান বন্ধ করো"
+      "ফ্যান বন্ধ করো",
+      "টার্ন অফ ফ্যান",
     ];
     const allOnPhrases = [
       "সব চালু",
@@ -304,7 +355,8 @@ class _ChatPage extends State<ChatPage> {
       "সব জ্বালাও",
       "সব চালাও",
       "সব চালিয়ে দাও",
-      "সব চালিয়ে দাও"
+      "সব চালিয়ে দাও",
+      "টার্ন অন অল"
     ];
     const allOffPhrases = [
       "সব বন্ধ",
@@ -312,7 +364,9 @@ class _ChatPage extends State<ChatPage> {
       "সব নিভাও",
       "সব বন্ধ করুন",
       "সব বন্ধ করো",
-      "সব বন্ধ করোন"
+      "সব বন্ধ করোন",
+      "টার্ন অফ অল",
+      "টার্নও ফল"
     ];
 
 // Check if textCommand matches any phrase in the array and assign the corresponding command
